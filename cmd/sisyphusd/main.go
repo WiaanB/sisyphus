@@ -1,4 +1,4 @@
-package sisyphusd
+package main
 
 import "fmt"
 
