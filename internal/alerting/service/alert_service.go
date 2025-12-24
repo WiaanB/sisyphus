@@ -9,7 +9,7 @@ import (
 )
 
 type AlertRepository interface {
-	GetAlertsByRule(ctx context.Context, ruleID string) (*domain.Alert, error)
+	GetAlertByRule(ctx context.Context, ruleID string) (*domain.Alert, error)
 	SaveAlert(ctx context.Context, alert *domain.Alert) error
 }
 type AlertService struct {
@@ -26,13 +26,17 @@ func NewAlertService(repo AlertRepository) *AlertService {
 
 func (s *AlertService) EvaluateRule(ctx context.Context, rule domain.Rule, metricValue float64) error {
 
-	alert, _ := s.repo.GetAlertsByRule(ctx, string(rule.ID))
+	alert, err := s.repo.GetAlertByRule(ctx, string(rule.ID))
+	if err != nil {
+		return err
+	}
 
 	now := s.clock()
 
 	if rule.IsViolated(metricValue) {
 		if alert == nil {
 			newAlert := domain.NewAlert(domain.AlertID(uuid.New().String()), string(rule.ID), domain.AlertStateActive, rule.Severity, now)
+			// TODO: Add logger
 			return s.repo.SaveAlert(ctx, newAlert)
 		}
 		return nil
