@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/WiaanB/sisyphus/internal/alerting/domain"
+	"github.com/WiaanB/sisyphus/internal/logging"
 	"github.com/google/uuid"
 )
 
@@ -25,7 +26,6 @@ func NewAlertService(repo AlertRepository) *AlertService {
 }
 
 func (s *AlertService) EvaluateRule(ctx context.Context, rule domain.Rule, metricValue float64) error {
-
 	alert, err := s.repo.GetAlertByRule(ctx, string(rule.ID))
 	if err != nil {
 		return err
@@ -36,13 +36,14 @@ func (s *AlertService) EvaluateRule(ctx context.Context, rule domain.Rule, metri
 	if rule.IsViolated(metricValue) {
 		if alert == nil {
 			newAlert := domain.NewAlert(domain.AlertID(uuid.New().String()), string(rule.ID), domain.AlertStateActive, rule.Severity, now)
-			// TODO: Add logger
 			return s.repo.SaveAlert(ctx, newAlert)
 		}
+		logging.Logger.Service.Info("alert still exists")
 		return nil
 	}
 
 	if alert != nil {
+		logging.Logger.Service.Info("alert resolved")
 		alert.Resolve(now)
 		return s.repo.SaveAlert(ctx, alert)
 	}

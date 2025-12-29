@@ -5,13 +5,13 @@ import "time"
 type AlertID string
 
 type Alert struct {
-	ID         AlertID
-	RuleID     string
-	State      AlertState
-	Severity   AlarmSeverity
-	CreatedAt  time.Time
-	ResolvedAt *time.Time
-	IgnoredAt  *time.Time
+	ID         AlertID       `bson:"id,omitempty"`
+	RuleID     string        `bson:"rule_id,omitempty"`
+	State      AlertState    `bson:"state,omitempty"`
+	Severity   AlarmSeverity `bson:"severity,omitempty"`
+	CreatedAt  time.Time     `bson:"created_at"`
+	ResolvedAt *time.Time    `bson:"resolved_at,omitempty"`
+	IgnoredAt  *time.Time    `bson:"ignored_at,omitempty"`
 }
 
 func NewAlert(id AlertID, ruleId string, state AlertState, severity AlarmSeverity, time time.Time) *Alert {
